@@ -1,0 +1,91 @@
+import tkinter as tk
+from tkinter import messagebox
+import sympy as sp
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Функция для решения арифметических задач
+def solve_arithmetic_problem(problem):
+    try:
+        result = eval(problem)
+        return result
+    except Exception as e:
+        return f"Ошибка: {e}"
+
+# Функция для решения уравнений
+def solve_equation(equation):
+    try:
+        # Преобразуем строку в математическое выражение
+        expr = sp.sympify(equation)
+        solutions = sp.solve(expr)
+        return solutions
+    except Exception as e:
+        return f"Ошибка: {e}"
+
+# Функция для построения графиков
+def plot_graph(function):
+    try:
+        # Преобразуем строку в выражение
+        x = sp.symbols('x')
+        expr = sp.sympify(function)
+        
+        # Преобразуем в функцию для matplotlib
+        f = sp.lambdify(x, expr, 'numpy')
+        
+        # Генерация точек для графика
+        x_vals = np.linspace(-10, 10, 400)
+        y_vals = f(x_vals)
+        
+        # Построение графика
+        plt.figure(figsize=(6, 4))
+        plt.plot(x_vals, y_vals, label=f'y = {function}')
+        plt.title(f'График функции y = {function}')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+    except Exception as e:
+        messagebox.showerror("Ошибка", f"Не удалось построить график: {e}")
+
+# Функция для обработки ввода
+def on_calculate():
+    problem = entry.get()
+    if '=' in problem:  # Уравнение
+        result = solve_equation(problem)
+        result_label.config(text=f"Решение уравнения: {result}")
+    else:  # Арифметическая задача
+        result = solve_arithmetic_problem(problem)
+        result_label.config(text=f"Результат: {result}")
+
+# Функция для построения графика
+def on_plot():
+    function = entry.get()
+    plot_graph(function)
+
+# Создание окна
+root = tk.Tk()
+root.title("Решатель математических задач")
+
+# Заголовок
+header = tk.Label(root, text="Введите математическое выражение", font=("Arial", 14))
+header.pack(pady=10)
+
+# Поле для ввода
+entry = tk.Entry(root, font=("Arial", 14), width=30)
+entry.pack(pady=10)
+
+# Кнопка для вычисления
+calculate_button = tk.Button(root, text="Решить", font=("Arial", 14), command=on_calculate)
+calculate_button.pack(pady=10)
+
+# Кнопка для построения графика
+plot_button = tk.Button(root, text="Построить график", font=("Arial", 14), command=on_plot)
+plot_button.pack(pady=10)
+
+# Метка для отображения результатов
+result_label = tk.Label(root, text="", font=("Arial", 14))
+result_label.pack(pady=10)
+
+# Запуск интерфейса
+root.mainloop()
