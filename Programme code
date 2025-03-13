@@ -15,50 +15,89 @@ def solve_arithmetic_problem(problem):
 # Функция для решения уравнений
 def solve_equation(equation):
     try:
-        # Преобразуем строку в математическое выражение
+        x = sp.symbols('x')
         expr = sp.sympify(equation)
-        solutions = sp.solve(expr)
+        solutions = sp.solve(expr, x)
         return solutions
+    except Exception as e:
+        return f"Ошибка: {e}"
+
+# Функция для нахождения производной
+def find_derivative(function):
+    try:
+        x = sp.symbols('x')
+        expr = sp.sympify(function)
+        derivative = sp.diff(expr, x)
+        return derivative
+    except Exception as e:
+        return f"Ошибка: {e}"
+
+# Функция для нахождения интеграла
+def find_integral(function, definite=False, a=None, b=None):
+    try:
+        x = sp.symbols('x')
+        expr = sp.sympify(function)
+        if definite:
+            integral = sp.integrate(expr, (x, a, b))
+        else:
+            integral = sp.integrate(expr, x)
+        return integral
     except Exception as e:
         return f"Ошибка: {e}"
 
 # Функция для построения графиков
 def plot_graph(function):
     try:
-        # Преобразуем строку в выражение
         x = sp.symbols('x')
         expr = sp.sympify(function)
-        
-        # Преобразуем в функцию для matplotlib
         f = sp.lambdify(x, expr, 'numpy')
-        
-        # Генерация точек для графика
+
         x_vals = np.linspace(-10, 10, 400)
         y_vals = f(x_vals)
-        
-        # Построение графика
+
         plt.figure(figsize=(6, 4))
         plt.plot(x_vals, y_vals, label=f'y = {function}')
+        plt.axhline(0, color='black', linewidth=0.5)
+        plt.axvline(0, color='black', linewidth=0.5)
         plt.title(f'График функции y = {function}')
         plt.xlabel('x')
         plt.ylabel('y')
-        plt.grid(True)
+        plt.grid(True, linestyle='--', linewidth=0.5)
         plt.legend()
         plt.show()
     except Exception as e:
         messagebox.showerror("Ошибка", f"Не удалось построить график: {e}")
 
-# Функция для обработки ввода
+# Функции для обработки событий кнопок
 def on_calculate():
     problem = entry.get()
-    if '=' in problem:  # Уравнение
+    if '=' in problem:  
         result = solve_equation(problem)
         result_label.config(text=f"Решение уравнения: {result}")
-    else:  # Арифметическая задача
+    else:  
         result = solve_arithmetic_problem(problem)
         result_label.config(text=f"Результат: {result}")
 
-# Функция для построения графика
+def on_derivative():
+    function = entry.get()
+    result = find_derivative(function)
+    result_label.config(text=f"Производная: {result}")
+
+def on_integral():
+    function = entry.get()
+    result = find_integral(function)
+    result_label.config(text=f"Интеграл: {result}")
+
+def on_definite_integral():
+    function = entry.get()
+    try:
+        a = float(a_entry.get())
+        b = float(b_entry.get())
+        result = find_integral(function, definite=True, a=a, b=b)
+        result_label.config(text=f"Определенный интеграл: {result}")
+    except ValueError:
+        messagebox.showerror("Ошибка", "Введите числовые границы a и b!")
+
 def on_plot():
     function = entry.get()
     plot_graph(function)
@@ -66,26 +105,47 @@ def on_plot():
 # Создание окна
 root = tk.Tk()
 root.title("Решатель математических задач")
+root.geometry("400x500")
 
 # Заголовок
-header = tk.Label(root, text="Введите математическое выражение", font=("Arial", 14))
-header.pack(pady=10)
+header = tk.Label(root, text="Введите математическое выражение:", font=("Arial", 14))
+header.pack(pady=5)
 
 # Поле для ввода
 entry = tk.Entry(root, font=("Arial", 14), width=30)
-entry.pack(pady=10)
+entry.pack(pady=5)
 
-# Кнопка для вычисления
-calculate_button = tk.Button(root, text="Решить", font=("Arial", 14), command=on_calculate)
-calculate_button.pack(pady=10)
+# Кнопки
+calculate_button = tk.Button(root, text="Решить", font=("Arial", 12), command=on_calculate)
+calculate_button.pack(pady=5)
 
-# Кнопка для построения графика
-plot_button = tk.Button(root, text="Построить график", font=("Arial", 14), command=on_plot)
-plot_button.pack(pady=10)
+derivative_button = tk.Button(root, text="Найти производную", font=("Arial", 12), command=on_derivative)
+derivative_button.pack(pady=5)
+
+integral_button = tk.Button(root, text="Найти интеграл", font=("Arial", 12), command=on_integral)
+integral_button.pack(pady=5)
+
+# Поля для границ определенного интеграла
+a_label = tk.Label(root, text="Граница a:", font=("Arial", 12))
+a_label.pack()
+a_entry = tk.Entry(root, font=("Arial", 12), width=10)
+a_entry.pack()
+
+b_label = tk.Label(root, text="Граница b:", font=("Arial", 12))
+b_label.pack()
+b_entry = tk.Entry(root, font=("Arial", 12), width=10)
+b_entry.pack()
+
+definite_integral_button = tk.Button(root, text="Определенный интеграл", font=("Arial", 12), command=on_definite_integral)
+definite_integral_button.pack(pady=5)
+
+plot_button = tk.Button(root, text="Построить график", font=("Arial", 12), command=on_plot)
+plot_button.pack(pady=5)
 
 # Метка для отображения результатов
-result_label = tk.Label(root, text="", font=("Arial", 14))
+result_label = tk.Label(root, text="", font=("Arial", 14), wraplength=380)
 result_label.pack(pady=10)
 
 # Запуск интерфейса
 root.mainloop()
+
